@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GameForge 2D Editor Shell</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <label>Проект <select id="projectSelect"><option>project1</option></select></label>
+      <label>Сцена <select id="sceneSelect"><option>Main</option></select></label>
+      <button id="createSceneBtn">Создать сцену</button>
+      <button id="createObjectBtn">Создать объект</button>
+      <button id="saveBtn">Сохранить</button>
+      <button id="previewBtn">Запустить Preview</button>
+    </header>
+
+    <main class="shell-grid">
+      <section class="panel" id="sceneTreePanel">
+        <h2>Сцена</h2>
+        <ul id="sceneTree" class="tree"></ul>
+      </section>
+
+      <section class="canvas-panel panel">
+        <h2>Визуальный редактор</h2>
+        <div id="sceneCanvas"></div>
+      </section>
+
+      <section class="panel" id="inspectorPanel">
+        <h2>Свойства объекта</h2>
+        <form id="inspectorForm">
+          <label>Имя <input name="name" /></label>
+          <label>X <input name="x" type="number" step="1" /></label>
+          <label>Y <input name="y" type="number" step="1" /></label>
+          <label>Ширина <input name="width" type="number" step="1" /></label>
+          <label>Высота <input name="height" type="number" step="1" /></label>
+          <label>Тег <input name="tag" /></label>
+        </form>
+      </section>
+
+      <section class="panel files-panel">
+        <h2>Файлы проекта</h2>
+        <ul class="tree">
+          <li>assets
+            <ul>
+              <li>images</li>
+              <li>sprites</li>
+              <li>audio</li>
+              <li>tilemaps</li>
+              <li>materials</li>
+            </ul>
+          </li>
+          <li>scenes</li>
+          <li>scripts</li>
+          <li>ui</li>
+          <li>data</li>
+          <li>exports</li>
+        </ul>
+      </section>
+    </main>
+
+    <menu id="createMenu" class="context-menu">
+      <button data-type="object">Object</button>
+      <button data-type="pawn">Pawn</button>
+      <button data-type="area">Area</button>
+      <button data-type="ui">Ui</button>
+    </menu>
+
+    <script src="src/app.js"></script>
+  </body>
+</html>
