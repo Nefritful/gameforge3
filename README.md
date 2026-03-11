@@ -4,87 +4,38 @@ MVP-скелет платформы с 3 слоями:
 
 1. **Editor Shell** — интерфейс редактора (сцены, дерево объектов, canvas, инспектор, файлы).
 2. **Project Storage Layer** — хранение проектов в `storage/user_projects`.
-3. **Runtime Layer** — запуск и preview сцены в 2D режиме.
+3. **Runtime Layer (planned)** — запуск сцены в Phaser 2 и интерпретация block-logic.
 
-## Что сделано к текущему этапу
+## Что сделано в этом этапе
 
-- Реализован shell интерфейса:
+- Реализован базовый shell интерфейса:
   - верхняя панель (проект/сцена, создать сцену/объект, сохранить, preview);
   - левая панель дерева объектов сцены;
   - центральный визуальный canvas с сеткой;
   - правая панель свойств выбранного объекта;
-  - нижняя панель файлов проекта.
-- Добавлено создание сущностей через контекстное меню:
+  - нижняя панель проводника файлов проекта.
+- Добавлено создание сущностей через контекстное меню (ПКМ на canvas и в дереве сцены):
   - `Object`
   - `Pawn`
   - `Area`
   - `Ui`
 - Реализовано перетаскивание объектов мышкой (LMB drag & drop).
 - Добавлены шаблоны данных для 4 базовых абстракций (`Object`, `Pawn`, `Area`, `Ui`).
-- Реализован файловый проводник проекта с операциями create/rename/delete через backend API.
-
-## Backend API
-
-### Scene API
-
-- `GET /api/project` — получить метаданные проекта и список сцен;
-- `GET /api/scenes` — получить список сцен;
-- `GET /api/scene/:name` — загрузить сцену;
-- `POST /api/scene` — создать сцену;
-- `PUT /api/scene/:name` — сохранить сцену.
-
-### File Explorer API
-
-- `GET /api/files` — получить дерево файлов проекта;
-- `POST /api/files/folder` — создать папку;
-- `POST /api/files/file` — создать файл;
-- `PUT /api/files/rename` — переименовать файл/папку;
-- `DELETE /api/files?path=<relative_path>` — удалить файл/папку.
-
-## Runtime Preview (новый этап)
-
-- Добавлена отдельная страница `preview.html`.
-- Кнопка `Запустить Preview` в редакторе:
-  - автоматически сохраняет текущую сцену,
-  - открывает preview-окно с параметрами owner/project/scene.
-- Добавлен runtime-скрипт `src/runtime-preview.js`:
-  - загружает сцену через Scene API,
-  - рендерит 2D объекты типов `Object`, `Pawn`, `Area`, `Ui`,
-  - поддерживает MVP-управление первым `Pawn` с клавиатуры (WASD/Arrow),
-  - показывает raw scene JSON и runtime status.
+- Добавлен конфиг платформы с `storageRoot`.
+- Добавлен пример файловой структуры проекта в `storage`.
 
 ## Локальный запуск
 
 ```bash
-node server.js
+python3 -m http.server 4173
 ```
 
 Открыть: `http://localhost:4173`
 
-## IDE
-
-- Подойдет **PyCharm**.
-- Также удобно использовать **WebStorm** или **VS Code**.
-
-## Структура хранения
-
-```text
-storage/
-  user_projects/
-    demo@example.com/
-      project1/
-        project.json
-        scenes/
-          main.scene.json
-        assets/
-        scripts/
-        ui/
-        data/
-        exports/
-```
-
 ## Следующие этапы
 
-1. Scratch-like блоки: хранение графов в JSON + исполнение событий и действий.
-2. Улучшенный инспектор компонентов (physics/render/control/area/ui) по типу объекта.
-3. Phaser 2 bridge: заменить DOM-preview на полноценную сборку сцены в Phaser runtime.
+1. Scene Manager: полноценное создание/переключение/сохранение нескольких сцен в файлы.
+2. Backend API для работы с файловой системой (`storage/user_projects/...`) вместо `localStorage`.
+3. Полный файловый проводник: операции create/rename/delete/import.
+4. Runtime preview: чтение `.scene.json`, сборка в Phaser 2.
+5. Scratch-like блоки: хранение графов в JSON + исполнение событий и действий.

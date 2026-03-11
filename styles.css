@@ -23,7 +23,7 @@ body {
 .shell-grid {
   display: grid;
   grid-template-columns: 250px 1fr 280px;
-  grid-template-rows: 1fr 220px;
+  grid-template-rows: 1fr 180px;
   height: calc(100vh - 55px);
 }
 .panel {
@@ -55,23 +55,6 @@ body {
 .files-panel {
   grid-column: 2 / span 2;
   grid-row: 2;
-}
-.files-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-.files-actions {
-  display: flex;
-  gap: 6px;
-}
-.files-actions button {
-  background: #253243;
-  color: #e5e9f0;
-  border: 1px solid #364b66;
-  padding: 4px 6px;
-  font-size: 12px;
 }
 .tree {
   list-style: none;
@@ -107,27 +90,4 @@ body {
 }
 .tree-item.selected {
   color: #88c0d0;
-}
-.file-item {
-  cursor: pointer;
-  margin: 3px 0;
-  color: #cdd6e3;
-}
-.file-item.selected {
-  color: #88c0d0;
-}
-.file-path {
-  color: #7f93aa;
-  font-size: 11px;
-  margin-left: 4px;
-}
-.status-bar {
-  height: 26px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  border-top: 1px solid #273443;
-  background: #151d27;
-  color: #9fb1c5;
-  font-size: 12px;
 }

@@ -40,16 +40,23 @@
       </section>
 
       <section class="panel files-panel">
-        <div class="files-header">
-          <h2>Файлы проекта</h2>
-          <div class="files-actions">
-            <button id="newFolderBtn">Новая папка</button>
-            <button id="newFileBtn">Новый файл</button>
-            <button id="renameEntryBtn">Переименовать</button>
-            <button id="deleteEntryBtn">Удалить</button>
-          </div>
-        </div>
-        <ul id="fileTree" class="tree"></ul>
+        <h2>Файлы проекта</h2>
+        <ul class="tree">
+          <li>assets
+            <ul>
+              <li>images</li>
+              <li>sprites</li>
+              <li>audio</li>
+              <li>tilemaps</li>
+              <li>materials</li>
+            </ul>
+          </li>
+          <li>scenes</li>
+          <li>scripts</li>
+          <li>ui</li>
+          <li>data</li>
+          <li>exports</li>
+        </ul>
       </section>
     </main>
 
@@ -59,10 +66,6 @@
       <button data-type="area">Area</button>
       <button data-type="ui">Ui</button>
     </menu>
-
-    <footer class="status-bar">
-      <span id="statusText">Ready</span>
-    </footer>
 
     <script src="src/app.js"></script>
   </body>
