@@ -1,141 +1,63 @@
-const projectSelect = document.getElementById('projectSelect');
-const sceneSelect = document.getElementById('sceneSelect');
-const createSceneBtn = document.getElementById('createSceneBtn');
-const saveBtn = document.getElementById('saveBtn');
-const previewBtn = document.getElementById('previewBtn');
 const sceneCanvas = document.getElementById('sceneCanvas');
 const sceneTree = document.getElementById('sceneTree');
 const createMenu = document.getElementById('createMenu');
 const createObjectBtn = document.getElementById('createObjectBtn');
 const inspector = document.getElementById('inspectorForm');
-const statusText = document.getElementById('statusText');
 
-const owner = 'demo@example.com';
-let projectName = 'project1';
-let currentSceneName = 'main';
-let currentScene = null;
+const objects = [];
 let selectedId = null;
 let dragState = null;
 
 const defaultTemplates = {
   object: () => ({
     id: crypto.randomUUID(),
-    name: `Object_${currentScene.objects.length + 1}`,
+    name: `Object_${objects.length + 1}`,
     type: 'object',
-    enabled: true,
-    visible: true,
+    transform: { x: 80, y: 80, width: 120, height: 60 },
     tags: ['interactive'],
-    transform: { x: 80, y: 80, width: 120, height: 60, scaleX: 1, scaleY: 1, rotation: 0 },
-    physics: { enabled: true, bodyType: 'dynamic', gravityY: 0, collideWorldBounds: false },
-    render: { texture: null, frame: null, alpha: 1 },
+    physics: { enabled: true, bodyType: 'dynamic', gravityY: 0 },
+    render: { texture: null, alpha: 1 },
     animation: { enabled: false, clips: [] },
-    variables: {},
-    events: []
+    variables: {}
   }),
   pawn: () => ({
     ...defaultTemplates.object(),
-    name: `Pawn_${currentScene.objects.length + 1}`,
+    name: `Pawn_${objects.length + 1}`,
     type: 'pawn',
     control: {
       keyboardEnabled: true,
       mouseEnabled: false,
-      gamepadEnabled: false,
       moveSpeed: 200,
       jumpForce: 350,
-      inputMap: { left: ['A', 'LEFT'], right: ['D', 'RIGHT'], up: ['W', 'UP'], jump: ['SPACE'] }
-    },
-    camera: { follow: false }
+      inputMap: { left: ['A', 'LEFT'], right: ['D', 'RIGHT'], jump: ['SPACE'] }
+    }
   }),
   area: () => ({
     id: crypto.randomUUID(),
-    name: `Area_${currentScene.objects.length + 1}`,
+    name: `Area_${objects.length + 1}`,
     type: 'area',
-    enabled: true,
-    visible: true,
-    tags: [],
-    transform: { x: 140, y: 140, width: 180, height: 90, scaleX: 1, scaleY: 1, rotation: 0 },
-    shape: { type: 'rectangle', radius: 0, points: [] },
-    areaMode: { trigger: true, collision: false, light: false, spawnZone: false, damageZone: false, audioZone: false },
-    effects: { damagePerSecond: 0, cameraZoom: null, musicCue: null },
+    transform: { x: 140, y: 140, width: 180, height: 90 },
+    shape: { type: 'rectangle' },
+    areaMode: { trigger: true, collision: false, light: false, damageZone: false },
     debug: { color: '#00ff00', opacity: 0.3, showInEditor: true }
   }),
   ui: () => ({
     id: crypto.randomUUID(),
-    name: `Ui_${currentScene.objects.length + 1}`,
+    name: `Ui_${objects.length + 1}`,
     type: 'ui',
-    enabled: true,
-    visible: true,
-    tags: [],
-    transform: { x: 32, y: 32, width: 160, height: 48, scaleX: 1, scaleY: 1, rotation: 0 },
+    transform: { x: 32, y: 32, width: 160, height: 48 },
     uiType: 'button',
     anchor: { preset: 'top-left', offsetX: 0, offsetY: 0 },
-    content: { text: 'Button', icon: null },
-    interaction: { clickable: true, hoverable: true, focusable: false }
+    content: { text: 'Button' },
+    interaction: { clickable: true }
   })
 };
-
-function setStatus(text) {
-  statusText.textContent = text;
-}
-
-async function api(path, options = {}) {
-  const query = `owner=${encodeURIComponent(owner)}&project=${encodeURIComponent(projectName)}`;
-  const response = await fetch(`${path}${path.includes('?') ? '&' : '?'}${query}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
-  });
-  if (!response.ok) {
-    const errorPayload = await response.json().catch(() => ({}));
-    throw new Error(errorPayload.error || `API error: ${response.status}`);
-  }
-  return response.json();
-}
-
-function sceneFileToName(fileName) {
-  return fileName.replace(/\.scene\.json$/, '');
-}
-
-async function loadProject() {
-  const payload = await api('/api/project');
-  projectName = payload.project.name;
-  projectSelect.innerHTML = `<option>${projectName}</option>`;
-  sceneSelect.innerHTML = '';
-
-  for (const sceneFile of payload.scenes) {
-    const name = sceneFileToName(sceneFile);
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = name;
-    sceneSelect.appendChild(option);
-  }
-
-  const preferred = payload.project.startScene || sceneFileToName(payload.scenes[0] || 'main.scene.json');
-  currentSceneName = preferred;
-  sceneSelect.value = preferred;
-  await loadScene(preferred);
-}
-
-async function loadScene(sceneName) {
-  const data = await api(`/api/scene/${encodeURIComponent(sceneName)}`);
-  currentSceneName = sceneName;
-  currentScene = {
-    id: data.id,
-    name: data.name,
-    layers: data.layers || [],
-    objects: data.objects || [],
-    logic: data.logic || { graphs: [] }
-  };
-
-  selectedId = currentScene.objects[0]?.id || null;
-  render();
-  setStatus(`Loaded scene: ${sceneName}`);
-}
 
 function addObject(type, x = 60, y = 60) {
   const newObj = defaultTemplates[type]();
   newObj.transform.x = x;
   newObj.transform.y = y;
-  currentScene.objects.push(newObj);
+  objects.push(newObj);
   selectedId = newObj.id;
   render();
 }
@@ -144,7 +66,7 @@ function render() {
   sceneCanvas.innerHTML = '';
   sceneTree.innerHTML = '';
 
-  for (const obj of currentScene.objects) {
+  for (const obj of objects) {
     const node = document.createElement('div');
     node.className = 'scene-node';
     node.dataset.id = obj.id;
@@ -171,7 +93,7 @@ function render() {
       renderInspector();
       renderTreeSelection();
     });
-    item.addEventListener('contextmenu', openCreateMenu);
+    item.addEventListener('contextmenu', (event) => openCreateMenu(event));
     sceneTree.appendChild(item);
   }
 
@@ -186,11 +108,8 @@ function renderTreeSelection() {
 }
 
 function renderInspector() {
-  const obj = currentScene.objects.find((entry) => entry.id === selectedId);
-  if (!obj) {
-    inspector.reset();
-    return;
-  }
+  const obj = objects.find((entry) => entry.id === selectedId);
+  if (!obj) return;
   inspector.name.value = obj.name;
   inspector.x.value = obj.transform.x;
   inspector.y.value = obj.transform.y;
@@ -200,7 +119,7 @@ function renderInspector() {
 }
 
 inspector.addEventListener('input', () => {
-  const obj = currentScene.objects.find((entry) => entry.id === selectedId);
+  const obj = objects.find((entry) => entry.id === selectedId);
   if (!obj) return;
   obj.name = inspector.name.value;
   obj.transform.x = Number(inspector.x.value);
@@ -214,7 +133,7 @@ inspector.addEventListener('input', () => {
 function startDrag(event) {
   if (event.button !== 0) return;
   const objId = event.target.dataset.id;
-  const obj = currentScene.objects.find((entry) => entry.id === objId);
+  const obj = objects.find((entry) => entry.id === objId);
   if (!obj) return;
   selectedId = obj.id;
   dragState = {
@@ -226,7 +145,7 @@ function startDrag(event) {
 
 window.addEventListener('mousemove', (event) => {
   if (!dragState) return;
-  const obj = currentScene.objects.find((entry) => entry.id === dragState.id);
+  const obj = objects.find((entry) => entry.id === dragState.id);
   if (!obj) return;
   obj.transform.x = event.clientX - dragState.offsetX;
   obj.transform.y = event.clientY - dragState.offsetY;
@@ -255,63 +174,23 @@ createMenu.addEventListener('click', (event) => {
   const x = parseInt(createMenu.style.left, 10) || 60;
   const y = parseInt(createMenu.style.top, 10) || 60;
   addObject(type, x, y);
-  setStatus(`Added ${type} to ${currentSceneName}`);
 });
 
-saveBtn.addEventListener('click', async () => {
-  await api(`/api/scene/${encodeURIComponent(currentSceneName)}`, {
-    method: 'PUT',
-    body: JSON.stringify(currentScene)
-  });
-  setStatus(`Saved scene: ${currentSceneName}`);
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const payload = JSON.stringify({ objects }, null, 2);
+  localStorage.setItem('gf_scene_main', payload);
+  alert('Сцена сохранена в localStorage (MVP).');
 });
 
-previewBtn.addEventListener('click', () => {
-  setStatus('Preview runtime будет следующим этапом (после API и Scene manager).');
+document.getElementById('previewBtn').addEventListener('click', () => {
+  alert('Preview runtime будет отдельным шагом (MVP shell готов).');
 });
 
-createSceneBtn.addEventListener('click', async () => {
-  const raw = prompt('Введите имя новой сцены (латиница, цифры, _):', `scene_${Date.now()}`);
-  const sceneName = (raw || '').trim();
-  if (!sceneName) return;
-
-  await api('/api/scene', {
-    method: 'POST',
-    body: JSON.stringify({
-      name: sceneName,
-      displayName: sceneName,
-      objects: [],
-      layers: [
-        { id: 'layer_default', name: 'Default' },
-        { id: 'layer_ui', name: 'UI' }
-      ],
-      logic: {
-        graphs: [
-          {
-            id: 'graph_main',
-            name: 'Main Logic',
-            blocks: [],
-            connections: []
-          }
-        ]
-      }
-    })
-  });
-
-  const option = document.createElement('option');
-  option.value = sceneName;
-  option.textContent = sceneName;
-  sceneSelect.appendChild(option);
-  sceneSelect.value = sceneName;
-  await loadScene(sceneName);
-  setStatus(`Created scene: ${sceneName}`);
+document.getElementById('createSceneBtn').addEventListener('click', () => {
+  alert('Создание нескольких сцен будет на следующем этапе.');
 });
 
-sceneSelect.addEventListener('change', async () => {
-  await loadScene(sceneSelect.value);
-});
-
-loadProject().catch((error) => {
-  console.error(error);
-  setStatus(`Ошибка загрузки проекта: ${error.message}`);
-});
+addObject('pawn', 120, 140);
+addObject('object', 300, 220);
+addObject('area', 460, 180);
+addObject('ui', 48, 52);
