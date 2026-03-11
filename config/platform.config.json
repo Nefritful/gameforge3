@@ -1,0 +1,18 @@
+{
+  "engine": "phaser2",
+  "storageRoot": "./storage/user_projects",
+  "projectTemplate": {
+    "directories": [
+      "assets/images",
+      "assets/sprites",
+      "assets/audio",
+      "assets/tilemaps",
+      "assets/materials",
+      "scenes",
+      "scripts",
+      "ui",
+      "data",
+      "exports"
+    ]
+  }
+}

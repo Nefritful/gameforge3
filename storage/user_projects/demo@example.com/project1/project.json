@@ -1,0 +1,9 @@
+{
+  "name": "project1",
+  "owner": "demo@example.com",
+  "engine": "phaser2",
+  "createdAt": "2026-03-11T00:00:00Z",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "startScene": "main",
+  "storageVersion": 1
+}
